@@ -23,6 +23,8 @@ pygame.display.set_caption("Typing Game")
 clock = pygame.time.Clock()
 time_since_last_added_word = 0
 current_typed_chars = ""
+# words scroll across screen at 2 pixels per second, but will speed up by 0.1 pixels every time a new word is added
+speed_up_factor = 0.0
 
 
 
@@ -31,29 +33,51 @@ class WordBox():
 	def __init__(self, x, y, word):
 		# set word for this word box to display
 		self.word = word
+		self.typedWord = ""
 		self.x = x
 		self.y = y
+		self.typedText = FONT.render(self.typedWord, True, RED, BLUE)
 		self.text = FONT.render(self.word, True, GREEN, BLUE)
 		self.textRect = self.text.get_rect()
-		self.textRect.center = (self.x, self.y)
+		self.typedTextRect = self.typedText.get_rect()
+		self.textRect.x = self.x
+		self.textRect.y = self.y
+		self.typedTextRect.x = self.x
+		self.typedTextRect.y = self.y
 		self.typed = False
 	
 	def update(self):
 		global current_typed_chars
 		# advance word box to right with each call to update, highlight typed letters of this word, flag word to be removed if whole word is typed
-		self.x += 2
-		self.textRect.center = (self.x, self.y)
+		self.x += 2 + speed_up_factor
+		self.textRect.x = self.x
+		self.typedTextRect.x = self.x
+
+		self.typedWord = ""
+
+		# check how much of word has been typed
+		for char in current_typed_chars:
+			for letter in self.word:
+				if char == letter:
+					self.typedWord += char
+					break
 
 		# if word has been typed, set self.typed = True
 		if current_typed_chars == self.word:
 			self.typed = True
-			current_typed_chars = ""
+
+		# update typedText to be rendered to screen as highlighted text
+		self.typedText = FONT.render(self.typedWord, True, RED, BLUE)
 
 	def draw(self, game_display):
 		game_display.blit(self.text, self.textRect)
+		game_display.blit(self.typedText, self.typedTextRect)
 
 	def is_typed(self):
 		return self.typed == True
+
+	def get_x(self):
+		return self.x
 
 #Game Loop
 
@@ -92,8 +116,9 @@ while running:
 
 	# Remove typed words from words and words that passed the edge of the screen
 	for word in words:
-		if word.is_typed() or word.x > DISPLAY_WIDTH:
+		if word.is_typed() or word.get_x() > DISPLAY_WIDTH:
 			words.remove(word)
+			current_typed_chars = ""
 	
 	print(current_typed_chars)
 
@@ -110,7 +135,8 @@ while running:
 	# check if we should add another word to the screen because either all words have been typed or 4 seconds has passed
 	# note: empty lists (and strings and tuples) are false, so check if not words to check if words is empty
 	if not words or time_since_last_added_word > 4000:
-		words.append(WordBox(-300, random.randint(0, DISPLAY_HEIGHT), dictionary[random.randint(0, dict_len-1)]))
+		words.append(WordBox(-300, random.randint(0, DISPLAY_HEIGHT-50), dictionary[random.randint(0, dict_len-1)]))
 		time_since_last_added_word = 0
+		speed_up_factor += 0.1
 
 pygame.quit()
