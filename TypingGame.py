@@ -14,7 +14,9 @@ FPS = 30
 #palette
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+DARK_RED = (195, 0, 0)
 RED = (255, 0, 0)
+DARK_GREEN = (0, 195, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (220, 220, 0)
@@ -119,11 +121,93 @@ class WordBox():
 		return len(self.typed_word)
 
 def display_start_menu():
-	pass
+	MENU_FONT = pygame.font.Font("freesansbold.ttf", 28)
+	TILE_TEXT_FONT = pygame.font.Font('freesansbold.ttf', 70)
+	title_text = TILE_TEXT_FONT.render("Typing Game", True, WHITE, BLACK)
+	title_text_rect = title_text.get_rect()
+	title_text_rect.center = ((DISPLAY_WIDTH/2), (DISPLAY_HEIGHT/4))
+	menu = True
+
+	while menu:
+		# check for exiting game early
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				quit()
+
+		game_display.fill(BLACK)
+		game_display.blit(title_text, title_text_rect)
+
+		# get mouse x and y
+		mouse_x = pygame.mouse.get_pos()[0]
+		mouse_y = pygame.mouse.get_pos()[1]
+
+		# get left mouse clicked val
+		clicked = pygame.mouse.get_pressed()[0]
+
+		# easy mode button settings
+		easy_button_length = 100
+		easy_button_width = 30
+		easy_button_x = DISPLAY_WIDTH/2 - easy_button_length/2
+		easy_button_y = DISPLAY_HEIGHT/2
+
+		# hard mode button settings
+		hard_button_length = 100
+		hard_button_width = 30
+		hard_button_x = DISPLAY_WIDTH/2 - hard_button_length/2
+		hard_button_y = DISPLAY_HEIGHT/2 + 3*hard_button_width
+
+		# button container panel settings
+		button_container_length = 200
+		button_container_width = 6*easy_button_width
+		button_container_x = DISPLAY_WIDTH/2 - button_container_length/2
+		button_container_y = DISPLAY_HEIGHT/2 - easy_button_width
+
+		# draw button container
+		pygame.draw.rect(game_display, BLUE, (button_container_x, button_container_y, button_container_length, button_container_width))
+
+		# easy button highlighting functionality
+		if easy_button_x + easy_button_length > mouse_x > easy_button_x and easy_button_y + easy_button_width > mouse_y > easy_button_y:
+			pygame.draw.rect(game_display, GREEN, (easy_button_x, easy_button_y, easy_button_length, easy_button_width))
+			if clicked:
+				return "Easy"
+
+		else:
+			pygame.draw.rect(game_display, DARK_GREEN, (easy_button_x, easy_button_y, easy_button_length, easy_button_width))
+
+		# hard button highlighting functionality 
+		if hard_button_x + hard_button_length > mouse_x > hard_button_x and hard_button_y + hard_button_width > mouse_y > hard_button_y:
+			pygame.draw.rect(game_display, RED, (hard_button_x, hard_button_y, hard_button_length, hard_button_width))
+			if clicked:
+				return "Hard"
+		else:
+			pygame.draw.rect(game_display, DARK_RED, (hard_button_x, hard_button_y, hard_button_length, hard_button_width))
+		
+		# button texts
+		easy_text = MENU_FONT.render("Easy", True, BLACK)
+		easy_text_rect = easy_text.get_rect()
+		easy_text_rect.x = easy_button_x + easy_button_length/5
+		easy_text_rect.y = easy_button_y
+		
+		hard_text = MENU_FONT.render("Hard", True, BLACK)
+		hard_text_rect = hard_text.get_rect()
+		hard_text_rect.x = hard_button_x + hard_button_length/5
+		hard_text_rect.y = hard_button_y
+
+		game_display.blit(easy_text, easy_text_rect)
+		game_display.blit(hard_text, hard_text_rect) 
+
+		pygame.display.update()
+		clock.tick(15)
 
 
-display_start_menu()
+# display start menu and set difficulty for game
+difficulty = display_start_menu()
 
+if difficulty == "Easy":
+	file_name = "small_dictionary.txt"
+else:
+	file_name = "dictionary.txt"
 
 #Game Loop
 
@@ -135,7 +219,7 @@ words = []
 # dictionary is all words to choose from to add to words on screen, read from dictionary.txt
 dictionary = []
 
-with open('dictionary.txt', 'r') as f:
+with open(file_name, 'r') as f:
 	for line in f:
 		dictionary.append(line.rstrip())
 
