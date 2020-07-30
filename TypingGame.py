@@ -26,6 +26,7 @@ game_display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 pygame.display.set_caption("Typing Game")
 clock = pygame.time.Clock()
 time_since_last_added_word = 0
+num_words_missed = 0
 current_typed_chars = ""
 typed_text = FONT.render(current_typed_chars, True, WHITE, BLACK)
 typed_rect = typed_text.get_rect()
@@ -117,6 +118,13 @@ class WordBox():
 	def get_typed_len(self):
 		return len(self.typed_word)
 
+def display_start_menu():
+	pass
+
+
+display_start_menu()
+
+
 #Game Loop
 
 # words is current list of all words on screen
@@ -133,7 +141,27 @@ with open('dictionary.txt', 'r') as f:
 
 dict_len = len(dictionary)
 running = True
+game_over = False
+
 while running:
+	if game_over:
+		game_over_text = FONT.render("Game Over", True, WHITE, BLACK)
+		game_over_rect = game_over_text.get_rect()
+		game_over_rect.x = DISPLAY_WIDTH / 2 - (game_over_rect.right - game_over_rect.left) / 2
+		game_over_rect.y = DISPLAY_HEIGHT / 2
+		game_display.blit(game_over_text, game_over_rect)
+		pygame.display.update()
+
+	while game_over:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				running = False
+				game_over = False
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_q:
+					running = False
+					game_over = False
+					
 	#Process input (events)
 	for event in pygame.event.get():
 		#check for closing window
@@ -160,7 +188,11 @@ while running:
 			if word.get_typed_len() > 0:
 				current_typed_chars = ""
 			score -= len(word.get_word())
-			
+			num_words_missed += 1
+
+			# game ends after missing 5 words
+			if num_words_missed >= 5:
+				game_over = True			
 
 		elif word.is_typed():
 			words.remove(word)
