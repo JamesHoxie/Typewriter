@@ -31,6 +31,8 @@ typed_text = FONT.render(current_typed_chars, True, WHITE, BLACK)
 typed_rect = typed_text.get_rect()
 # words scroll across screen at 2 pixels per second, but will speed up by 0.1 pixels every time a new word is added
 speed_up_factor = 0.0
+# create a new word every 4 seconds to start, but with each new word, reduce timer
+new_word_timer = 4000
 score = 0
 score_text = SCORE_FONT.render(str(score), True, WHITE, BLACK)
 score_rect = score_text.get_rect()
@@ -60,6 +62,7 @@ class WordBox():
 	def __init__(self, x, y, word):
 		# set word for this word box to display
 		self.word = word
+		self.word_len = len(word)
 		self.typed_word = ""
 		self.x = x
 		self.y = y
@@ -83,10 +86,12 @@ class WordBox():
 		self.typed_word = ""
 
 		# check how much of word has been typed
-		for char in current_typed_chars:
-			for letter in self.word:
-				if char == letter:
-					self.typed_word += char
+		for i in range(0, self.word_len):
+			for j in range(i, len(current_typed_chars)):
+				if self.word[i] != current_typed_chars[j]:
+					break
+				else:
+					self.typed_word += current_typed_chars[j]
 					break
 
 		# if word has been typed, set self.typed = True
@@ -108,6 +113,9 @@ class WordBox():
 
 	def get_word(self):
 		return self.word
+
+	def get_typed_len(self):
+		return len(self.typed_word)
 
 #Game Loop
 
@@ -148,7 +156,9 @@ while running:
 	for word in words:
 		if word.get_x() > DISPLAY_WIDTH:
 			words.remove(word)
-			current_typed_chars = ""
+			# only clear typed chars if word that passed edge of screen was in process of being typed
+			if word.get_typed_len() > 0:
+				current_typed_chars = ""
 			score -= len(word.get_word())
 			
 
@@ -171,9 +181,22 @@ while running:
 
 	# check if we should add another word to the screen because either all words have been typed or 4 seconds has passed
 	# note: empty lists (and strings and tuples) are false, so check if not words to check if words is empty
-	if not words or time_since_last_added_word > 4000:
+	if not words or time_since_last_added_word > new_word_timer:
 		words.append(WordBox(-300, random.randint(15, DISPLAY_HEIGHT-50), dictionary[random.randint(0, dict_len-1)]))
 		time_since_last_added_word = 0
-		speed_up_factor += 0.1
+		speed_up_factor += 0.05
+		new_word_timer -= 100 
+
+		# words never move faster than 6 pixels
+		if speed_up_factor > 4:
+			speed_up_factor = 4
+
+		# time between words never smaller than 1500 milliseconds
+		if new_word_timer < 1500:
+			new_word_timer = 1500
+
+
+
+		print(speed_up_factor)
 
 pygame.quit()
