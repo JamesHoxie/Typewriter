@@ -25,7 +25,7 @@ ORANGE = (255, 165, 0)
 FONT = pygame.font.Font('freesansbold.ttf', 32)
 SCORE_FONT = pygame.font.Font(None, 28)
 game_display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
-pygame.display.set_caption("Typing Game")
+pygame.display.set_caption("Typewriter")
 clock = pygame.time.Clock()
 time_since_last_added_word = 0
 num_words_missed = 0
@@ -123,7 +123,7 @@ class WordBox():
 def display_start_menu():
 	MENU_FONT = pygame.font.Font("freesansbold.ttf", 28)
 	TILE_TEXT_FONT = pygame.font.Font('freesansbold.ttf', 70)
-	title_text = TILE_TEXT_FONT.render("Typing Game", True, WHITE, BLACK)
+	title_text = TILE_TEXT_FONT.render("Typewriter", True, WHITE, BLACK)
 	title_text_rect = title_text.get_rect()
 	title_text_rect.center = ((DISPLAY_WIDTH/2), (DISPLAY_HEIGHT/4))
 	menu = True
@@ -201,6 +201,29 @@ def display_start_menu():
 		clock.tick(15)
 
 
+def pause():
+	PAUSE_FONT = pygame.font.Font("freesansbold.ttf", 35)
+	pause_text = PAUSE_FONT.render("Paused", True, WHITE, BLACK)
+	pause_rect = pause_text.get_rect()
+	pause_rect.center = (DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2)
+	paused = True
+
+	game_display.blit(pause_text, pause_rect)
+	pygame.display.update()
+
+
+	while paused:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				return False
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_1:
+					return True
+
+		clock.tick(5)
+
+
+
 # display start menu and set difficulty for game
 difficulty = display_start_menu()
 
@@ -254,7 +277,9 @@ while running:
 
 		# check for typing a letter
 		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_BACKSPACE:
+			if event.key == pygame.K_1:
+				running = pause()
+			elif event.key == pygame.K_BACKSPACE:
 				if len(current_typed_chars) > 0:
 					current_typed_chars = current_typed_chars[:len(current_typed_chars)-1]
 			else:
@@ -310,9 +335,5 @@ while running:
 		# time between words never smaller than 1500 milliseconds
 		if new_word_timer < 1500:
 			new_word_timer = 1500
-
-
-
-		print(speed_up_factor)
 
 pygame.quit()
