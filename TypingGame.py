@@ -7,7 +7,7 @@ pygame.init()
 pygame.mixer.init()
 
 DISPLAY_WIDTH = 1080
-DISPLAY_HEIGHT = 480
+DISPLAY_HEIGHT = 500
 FPS = 30
 
 
@@ -40,6 +40,8 @@ score_text = SCORE_FONT.render(str(score), True, WHITE, BLACK)
 score_rect = score_text.get_rect()
 star_img = pygame.image.load('./resources/star.png')
 num_lives = 5
+last_word_height = DISPLAY_HEIGHT/2
+go_above = True
 
 # functions
 def display_lives():
@@ -82,11 +84,8 @@ class WordBox():
 		self.typed_text = FONT.render(self.typed_word, True, YELLOW, BLUE)
 		self.text = FONT.render(self.word, True, GREEN, BLUE)
 		self.text_rect = self.text.get_rect()
-		self.typed_text_rect = self.typed_text.get_rect()
 		self.text_rect.x = self.x
 		self.text_rect.y = self.y
-		self.typed_text_rect.x = self.x
-		self.typed_text_rect.y = self.y
 		self.typed = False
 	
 	def update(self):
@@ -94,14 +93,18 @@ class WordBox():
 		# advance word box to right with each call to update, highlight typed letters of this word, flag word to be removed if whole word is typed
 		self.x += 2 + speed_up_factor
 		self.text_rect.x = self.x
-		self.typed_text_rect.x = self.x
 
 		self.typed_word = ""
 
 		# check how much of word has been typed
+		no_match = False
 		for i in range(0, self.word_len):
+			if no_match:
+				break
+
 			for j in range(i, len(current_typed_chars)):
 				if self.word[i] != current_typed_chars[j]:
+					no_match = True
 					break
 				else:
 					self.typed_word += current_typed_chars[j]
@@ -116,7 +119,7 @@ class WordBox():
 
 	def draw(self, game_display):
 		game_display.blit(self.text, self.text_rect)
-		game_display.blit(self.typed_text, self.typed_text_rect)
+		game_display.blit(self.typed_text, self.text_rect)
 
 	def is_typed(self):
 		return self.typed == True
@@ -332,7 +335,16 @@ while running:
 	# check if we should add another word to the screen because either all words have been typed or 4 seconds has passed
 	# note: empty lists (and strings and tuples) are false, so check if not words to check if words is empty
 	if not words or time_since_last_added_word > new_word_timer:
-		words.append(WordBox(-300, random.randint(60, DISPLAY_HEIGHT-50), dictionary[random.randint(0, dict_len-1)]))
+
+		# alternate between adding new words at heights above and below the last word added
+		if go_above:
+			word_height = random.randint(70, last_word_height - 35)
+			go_above = False
+		else:
+			word_height = random.randint(last_word_height + 35, DISPLAY_HEIGHT - 45)
+			go_above = True
+
+		words.append(WordBox(-300, word_height, dictionary[random.randint(0, dict_len-1)]))
 		time_since_last_added_word = 0
 		speed_up_factor += 0.05
 		new_word_timer -= 100 
