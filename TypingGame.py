@@ -28,7 +28,6 @@ game_display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 pygame.display.set_caption("Typewriter")
 clock = pygame.time.Clock()
 time_since_last_added_word = 0
-num_words_missed = 0
 current_typed_chars = ""
 typed_text = FONT.render(current_typed_chars, True, WHITE, BLACK)
 typed_rect = typed_text.get_rect()
@@ -39,8 +38,19 @@ new_word_timer = 4000
 score = 0
 score_text = SCORE_FONT.render(str(score), True, WHITE, BLACK)
 score_rect = score_text.get_rect()
+star_img = pygame.image.load('./resources/star.png')
+num_lives = 5
 
 # functions
+def display_lives():
+	global num_lives
+	x = 1000
+	y = 50
+
+	for i in range(num_lives, 0, -1):
+		game_display.blit(star_img, (x, y))
+		x -= 35
+
 def display_score():
 	font_color = WHITE
 
@@ -228,16 +238,14 @@ def pause():
 difficulty = display_start_menu()
 
 if difficulty == "Easy":
-	file_name = "small_dictionary.txt"
+	file_name = "./resources/small_dictionary.txt"
 else:
-	file_name = "dictionary.txt"
+	file_name = "./resources/dictionary.txt"
 
 #Game Loop
 
 # words is current list of all words on screen
 words = []
-
-# words.append(WordBox(25, 25, "banana"))
 
 # dictionary is all words to choose from to add to words on screen, read from dictionary.txt
 dictionary = []
@@ -297,10 +305,10 @@ while running:
 			if word.get_typed_len() > 0:
 				current_typed_chars = ""
 			score -= len(word.get_word())
-			num_words_missed += 1
+			num_lives -= 1
 
 			# game ends after missing 5 words
-			if num_words_missed >= 5:
+			if num_lives <= 0:
 				game_over = True			
 
 		elif word.is_typed():
@@ -312,6 +320,7 @@ while running:
 	game_display.fill(BLACK)
 	display_typed_chars()
 	display_score()
+	display_lives()
 
 	for word in words:
 		word.draw(game_display)
@@ -323,7 +332,7 @@ while running:
 	# check if we should add another word to the screen because either all words have been typed or 4 seconds has passed
 	# note: empty lists (and strings and tuples) are false, so check if not words to check if words is empty
 	if not words or time_since_last_added_word > new_word_timer:
-		words.append(WordBox(-300, random.randint(15, DISPLAY_HEIGHT-50), dictionary[random.randint(0, dict_len-1)]))
+		words.append(WordBox(-300, random.randint(60, DISPLAY_HEIGHT-50), dictionary[random.randint(0, dict_len-1)]))
 		time_since_last_added_word = 0
 		speed_up_factor += 0.05
 		new_word_timer -= 100 
