@@ -3,13 +3,10 @@ import random
 import math
 
 pygame.init()
-#mixer handles sound
-pygame.mixer.init()
 
 DISPLAY_WIDTH = 1080
 DISPLAY_HEIGHT = 500
 FPS = 30
-
 
 #palette
 WHITE = (255, 255, 255)
@@ -42,35 +39,6 @@ star_img = pygame.image.load('./resources/star.png')
 num_lives = 5
 last_word_height = DISPLAY_HEIGHT/2
 go_above = True
-
-# functions
-def display_lives():
-	global num_lives
-	x = 1000
-	y = 50
-
-	for i in range(num_lives, 0, -1):
-		game_display.blit(star_img, (x, y))
-		x -= 35
-
-def display_score():
-	font_color = WHITE
-
-	if score < 0:
-		font_color = RED
-
-	score_text = SCORE_FONT.render("Score: " + str(score), True, font_color, BLACK)
-	score_rect = score_text.get_rect()
-	score_rect.x = 930
-	score_rect.y = 10
-	game_display.blit(score_text, score_rect)
-
-def display_typed_chars():
-	typed_text = FONT.render(current_typed_chars, True, WHITE, ORANGE)
-	typed_rect = typed_text.get_rect()
-	typed_rect.x = 400
-	typed_rect.y = 10
-	game_display.blit(typed_text, typed_rect)
 
 # classes
 class WordBox():
@@ -132,6 +100,35 @@ class WordBox():
 
 	def get_typed_len(self):
 		return len(self.typed_word)
+
+# functions
+def display_lives():
+	global num_lives
+	x = 1000
+	y = 50
+
+	for i in range(num_lives, 0, -1):
+		game_display.blit(star_img, (x, y))
+		x -= 35
+
+def display_score():
+	font_color = WHITE
+
+	if score < 0:
+		font_color = RED
+
+	score_text = SCORE_FONT.render("Score: " + str(score), True, font_color, BLACK)
+	score_rect = score_text.get_rect()
+	score_rect.x = 930
+	score_rect.y = 10
+	game_display.blit(score_text, score_rect)
+
+def display_typed_chars():
+	typed_text = FONT.render(current_typed_chars, True, WHITE, ORANGE)
+	typed_rect = typed_text.get_rect()
+	typed_rect.x = 400
+	typed_rect.y = 10
+	game_display.blit(typed_text, typed_rect)
 
 def display_start_menu():
 	MENU_FONT = pygame.font.Font("freesansbold.ttf", 28)
@@ -234,8 +231,6 @@ def pause():
 					return True
 
 		clock.tick(5)
-
-
 
 # display start menu and set difficulty for game
 difficulty = display_start_menu()
